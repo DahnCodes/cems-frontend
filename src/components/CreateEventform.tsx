@@ -1,5 +1,5 @@
 "use client";
-
+import { AxiosError } from "axios";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import axios from "@/lib/api";
@@ -53,11 +53,13 @@ export default function CreateEventPage() {
         capacity: "",
         coverImage: "",
       });
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to create event");
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: unknown) {
+  const error = err as AxiosError<{ message: string }>;
+
+  toast.error(
+    error.response?.data?.message || "Failed to create event"
+  );
+}
   };
 
   return (
@@ -84,7 +86,7 @@ export default function CreateEventPage() {
 
           <div className="mt-4">
             <ImageUpload
-              onUpload={(url) =>
+              onUploadAction={(url) =>
                 setForm((prev) => ({ ...prev, coverImage: url }))
               }
             />

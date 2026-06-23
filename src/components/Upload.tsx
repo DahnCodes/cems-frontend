@@ -1,36 +1,60 @@
 "use client";
 
-import { CldUploadWidget } from "next-cloudinary";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
+import type { CloudinaryUploadWidgetResults } from "next-cloudinary";
+
+const CldUploadWidget = dynamic(
+  () => import("next-cloudinary").then((mod) => mod.CldUploadWidget),
+  { ssr: false }
+);
 
 type Props = {
-  onUpload: (url: string) => void;
+  onUploadAction?: (url: string) => void;
 };
 
-export default function ImageUpload({ onUpload }: Props) {
+export default function ImageUpload({ onUploadAction }: Props) {
+  const safeCallback =
+    typeof onUploadAction === "function" ? onUploadAction : () => {};
+
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+
+  if (!cloudName) {
+    return (
+      <p className="text-red-500 text-sm">
+        Cloudinary not configured
+      </p>
+    );
+  }
+
   return (
     <CldUploadWidget
       uploadPreset="campuslink_uploads"
-      onSuccess={(result) => {
+      options={{ cloudName }}
+      onSuccess={(result: CloudinaryUploadWidgetResults) => {
         const info = result.info;
 
         if (
           typeof info === "object" &&
-          info !== null &&
+          info &&
           "secure_url" in info
         ) {
-          onUpload(String(info.secure_url));
+          safeCallback((info as any).secure_url);
         }
       }}
     >
-      {({ open }) => (
-        <Button
-          type="button"
-          onClick={() => open()}
-        >
-          Upload Cover Image
-        </Button>
-      )}
+      {(cloudinary) => {
+        const open = cloudinary?.open;
+
+        return (
+          <Button
+            type="button"
+            onClick={() => open?.()}
+          >
+            Upload Cover Image
+          </Button>
+        );
+      }}
     </CldUploadWidget>
   );
 }
