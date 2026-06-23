@@ -47,7 +47,7 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* LOGO */}
           <Link href={isAuthenticated ? '/dashboard' : '/'}>
-            <h2 className="text-2xl font-bold">CampusLink</h2>
+            <h2 className="text-2xl font-bold">KampusLink</h2>
           </Link>
 
           <div className="hidden md:flex items-center gap-8">
